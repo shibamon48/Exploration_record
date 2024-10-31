@@ -356,7 +356,7 @@ function clickListener(event, map) {
   const lng = event.latLng.lng();
   const marker = new google.maps.Marker({
     position: {lat, lng},
-    map
+    map,
   });
   // スポットにクリックイベントを追加
   marker.addListener('click', function() {
