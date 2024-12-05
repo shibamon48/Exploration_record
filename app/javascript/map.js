@@ -18,6 +18,7 @@ const searchBox = new google.maps.places.SearchBox(input);
 const buttonOpen = document.getElementById('modalOpen');
 const modal = document.getElementById('easyModal');
 const buttonClose = document.getElementsByClassName('modalClose')[0];
+const editAnounce = document.getElementById('editAnounce');
 // なんだこの量...
 
 function initialize() {
@@ -39,7 +40,7 @@ function initialize() {
   }
 
   // 検索バーを右上に表示
-  map.controls[google.maps.ControlPosition.LEFT_TOP].push(
+  map.controls[google.maps.ControlPosition.RIGHT_TOP].push(
       document.getElementById('bar'));
   let autocomplete = new google.maps.places.Autocomplete(
       document.getElementById('autoc'));
@@ -205,6 +206,7 @@ function completed() {
   const complete = document.getElementById('complete');
   complete.style.display = 'none';
   complete.removeEventListener('click', completed);
+  editAnounce.style.display = 'none';
   if (dottedPolyline) {
     dottedPolyline.setMap(null);
     dottedPolyline = null;}
@@ -263,13 +265,14 @@ function drawSnappedPolyline(snappedCoordinates) {
       return;
     }
     isPolylineSelected = true;
-
     let editPathValues = [];
 
     let path = this.getPath();
     for (let i = 0; i < path.getLength(); i++) {
       editPathValues.push(path.getAt(i));
     }
+
+    // 点線の記入
     const lineSymbol = {
       path: "M 0,-1 0,1",
       strokeColor: '#ff4500',
@@ -287,16 +290,16 @@ function drawSnappedPolyline(snappedCoordinates) {
         },
       ]
     });
+
     this.setMap(null);
     dottedPolyline.setMap(map);
 
 
     start_button.style.display = 'none';
+    // ここでルート作成される
     drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYLINE);
-    let completeButton;
-    if (!completeButton) {
-      showCompleteButton();
-    }
+    editAnounce.style.display = 'block';
+    showCompleteButton();
     deleteOldPath(editPathValues);
     isPolylineSelected = false;
     start_button.style.display = 'block';
