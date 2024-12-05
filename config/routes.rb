@@ -4,6 +4,7 @@ Rails.application.routes.draw do
 
   resource :route, only: %i[new index create destroy]
   post "save_spot_data" => "spots#save_spot_data"
+  patch "update_spot_data/:id" => "spots#update_spot_data"
   get "get_spot_data" => "spots#get_spot_data"
 
   get "login" => "user_sessions#new", :as => :login

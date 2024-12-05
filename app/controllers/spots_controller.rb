@@ -12,6 +12,13 @@ class SpotsController < ApplicationController
     end
   end
 
+  def update_spot_data
+    @spot = Spot.find(params[:id])
+    @spot.update!(spot_params)
+    @spot.photo.attach(params[:spot][:photo]) if params[:spot][:photo]
+  end
+
+
   def get_spot_data
     #必要無くなった
     @spot = Spot.find_by(latitude: params[:lat], longitude: params[:lng])

@@ -101,7 +101,9 @@ function initialize() {
     marker.spotData = {
       name: spot.name,
       review: spot.review,
-      photo: spot.photo_url
+      photo: spot.photo_url,
+      latitude: spot.latitude,
+      longitude: spot.longitude
     };
   
     // クリックイベントでデータを使用
@@ -117,42 +119,33 @@ function initialize() {
         document.querySelector('#new_image').src = ''; // 画像がない場合の処理
       }
   
-      // その他のデータをフォームに表示
+      // その他のデータと閉じるボタンを表示
       document.querySelector('#spot_name').value = data.name;
       document.querySelector('#spot_review').value = data.review;
-
-  // for(i = 0; i < spots.length; i++) {
-  //   const lat = spots[i].latitude;
-  //   const lng = spots[i].longitude;
-  //   const marker = new google.maps.Marker({
-  //     position: {lat, lng},
-  //     map
-  //   });
-  //   //読取用のクリックイベント追加
-  //   google.maps.event.addListener(marker, 'click', function() {
-      // 保存されたデータを取得する
-      // fetch(`/get_spot_data?lat=${lat}&lng=${lng}`)
-      // .then(response => response.json())
-      // .then(data => {
-      //   if (data) {
-      //     // データがあれば表示
-      //     console.log(data);
-      //     document.querySelector('#spotInfo').style.display = 'block';
-      //     if (data.photo) {
-      //       document.querySelector('#new_image').src = data.photo;
-      //     } else {
-      //       document.querySelector('#new_image').src = ''; // 画像がない場合の処理
-      //     }
-      //     document.querySelector('#name').value = data.name;
-      //     document.querySelector('#review').value = data.review;
-      //   } else {
-      //     console.log('データが見つかりませんでした');
-      //   }
-      // })
-      // .catch(error => console.error('エラー:', error));
-
+      document.querySelector('#lat').value = data.latitude;
+      document.querySelector('#lng').value = data.longitude;  
       const infoClose = document.querySelector('#infoClose');
       infoClose.addEventListener('click', function() {
+        spotInfo.style.display = 'none';
+      });
+
+      // 更新機能
+      document.querySelector('#update_form').addEventListener('click', function(e) {
+        e.preventDefault(); // ページ遷移を防ぐ
+        const form = document.getElementById('spot_form');
+        const formData = new FormData(form);
+        fetch(`/update_spot_data/${spot.id}`, {
+          method: 'PATCH',
+          headers: {
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+          },
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('spotInfo').style.display = 'none';
+        })
+        .catch(error => console.error(error));
         spotInfo.style.display = 'none';
       });
     });
