@@ -5,6 +5,7 @@ class RoutesController < ApplicationController
 
   def new
     @user = current_user
+    gon.user = @user
     @spot = Spot.new
     spots = Spot.all
     gon.spots = spots

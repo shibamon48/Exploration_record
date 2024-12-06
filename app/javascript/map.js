@@ -103,7 +103,8 @@ function initialize() {
       review: spot.review,
       photo: spot.photo_url,
       latitude: spot.latitude,
-      longitude: spot.longitude
+      longitude: spot.longitude,
+      user_id: spot.user_id,
     };
   
     // クリックイベントでデータを使用
@@ -119,15 +120,37 @@ function initialize() {
         document.querySelector('#new_image').src = ''; // 画像がない場合の処理
       }
   
-      // その他のデータと閉じるボタンを表示
+      // その他のデータと各種ボタンを表示
       document.querySelector('#spot_name').value = data.name;
       document.querySelector('#spot_review').value = data.review;
       document.querySelector('#lat').value = data.latitude;
-      document.querySelector('#lng').value = data.longitude;  
+      document.querySelector('#lng').value = data.longitude; 
+
       const infoClose = document.querySelector('#infoClose');
       infoClose.addEventListener('click', function() {
         spotInfo.style.display = 'none';
       });
+
+      if (data.user_id == gon.user.id) {
+        const deleteButton = document.querySelector('#delete_form');
+        deleteButton.style.display = 'block';
+        deleteButton.addEventListener('click', function(e) {
+          e.preventDefault();
+          fetch(`/delete_spot_data/${spot.id}`, {
+            method: 'DELETE',
+            headers: {
+              'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+            }
+          })
+          .then(response => response.json())
+          .then(data => {
+            document.getElementById('spotInfo').style.display = 'none';
+          })
+          .catch(error => console.error(error));
+          marker.setMap(null);
+          spotInfo.style.display = 'none';
+        });
+      }
 
       // 更新機能
       document.querySelector('#update_form').addEventListener('click', function(e) {

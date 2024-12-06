@@ -68,11 +68,10 @@
           </div>
           <%= f.hidden_field :latitude, id: "lat" %>
           <%= f.hidden_field :longitude, id: "lng" %>
-          <% if @spot %>
-            <%= f.submit "更新", type: "button", id: "update_form", class: "btn btn-primary" %>
-          <% else %>
+          <div class="flex justify-center">
+            <%= f.submit "削除", type: "button", id: "delete_form", class: "btn btn-danger hidden mx-5" %>
             <%= f.submit "登録", type: "button", id: "save_form", class: "btn btn-primary" %>
-          <% end %>
+          </div>
         <% end %>
       </div>
     </div>

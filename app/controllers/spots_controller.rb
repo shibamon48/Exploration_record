@@ -31,6 +31,11 @@ class SpotsController < ApplicationController
     end
   end
 
+  def delete_spot_data
+    @spot = Spot.find(params[:id])
+    @spot.destroy!
+  end
+
   private
   def spot_params
     params.require(:spot).permit(:latitude, :longitude, :photo, :name, :review).merge(user_id: current_user.id)
