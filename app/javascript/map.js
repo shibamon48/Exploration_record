@@ -18,6 +18,7 @@ const searchBox = new google.maps.places.SearchBox(input);
 const buttonOpen = document.getElementById('modalOpen');
 const modal = document.getElementById('easyModal');
 const buttonClose = document.getElementsByClassName('modalClose')[0];
+const editAnounce = document.getElementById('editAnounce');
 // なんだこの量...
 
 function initialize() {
@@ -39,7 +40,7 @@ function initialize() {
   }
 
   // 検索バーを右上に表示
-  map.controls[google.maps.ControlPosition.LEFT_TOP].push(
+  map.controls[google.maps.ControlPosition.RIGHT_TOP].push(
       document.getElementById('bar'));
   let autocomplete = new google.maps.places.Autocomplete(
       document.getElementById('autoc'));
@@ -100,7 +101,10 @@ function initialize() {
     marker.spotData = {
       name: spot.name,
       review: spot.review,
-      photo: spot.photo_url
+      photo: spot.photo_url,
+      latitude: spot.latitude,
+      longitude: spot.longitude,
+      user_id: spot.user_id,
     };
   
     // クリックイベントでデータを使用
@@ -116,42 +120,55 @@ function initialize() {
         document.querySelector('#new_image').src = ''; // 画像がない場合の処理
       }
   
-      // その他のデータをフォームに表示
+      // その他のデータと各種ボタンを表示
       document.querySelector('#spot_name').value = data.name;
       document.querySelector('#spot_review').value = data.review;
-
-  // for(i = 0; i < spots.length; i++) {
-  //   const lat = spots[i].latitude;
-  //   const lng = spots[i].longitude;
-  //   const marker = new google.maps.Marker({
-  //     position: {lat, lng},
-  //     map
-  //   });
-  //   //読取用のクリックイベント追加
-  //   google.maps.event.addListener(marker, 'click', function() {
-      // 保存されたデータを取得する
-      // fetch(`/get_spot_data?lat=${lat}&lng=${lng}`)
-      // .then(response => response.json())
-      // .then(data => {
-      //   if (data) {
-      //     // データがあれば表示
-      //     console.log(data);
-      //     document.querySelector('#spotInfo').style.display = 'block';
-      //     if (data.photo) {
-      //       document.querySelector('#new_image').src = data.photo;
-      //     } else {
-      //       document.querySelector('#new_image').src = ''; // 画像がない場合の処理
-      //     }
-      //     document.querySelector('#name').value = data.name;
-      //     document.querySelector('#review').value = data.review;
-      //   } else {
-      //     console.log('データが見つかりませんでした');
-      //   }
-      // })
-      // .catch(error => console.error('エラー:', error));
+      document.querySelector('#lat').value = data.latitude;
+      document.querySelector('#lng').value = data.longitude; 
 
       const infoClose = document.querySelector('#infoClose');
       infoClose.addEventListener('click', function() {
+        spotInfo.style.display = 'none';
+      });
+
+      if (data.user_id == gon.user.id) {
+        const deleteButton = document.querySelector('#delete_form');
+        deleteButton.style.display = 'block';
+        deleteButton.addEventListener('click', function(e) {
+          e.preventDefault();
+          fetch(`/delete_spot_data/${spot.id}`, {
+            method: 'DELETE',
+            headers: {
+              'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+            }
+          })
+          .then(response => response.json())
+          .then(data => {
+            document.getElementById('spotInfo').style.display = 'none';
+          })
+          .catch(error => console.error(error));
+          marker.setMap(null);
+          spotInfo.style.display = 'none';
+        });
+      }
+
+      // 更新機能
+      document.querySelector('#update_form').addEventListener('click', function(e) {
+        e.preventDefault(); // ページ遷移を防ぐ
+        const form = document.getElementById('spot_form');
+        const formData = new FormData(form);
+        fetch(`/update_spot_data/${spot.id}`, {
+          method: 'PATCH',
+          headers: {
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+          },
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('spotInfo').style.display = 'none';
+        })
+        .catch(error => console.error(error));
         spotInfo.style.display = 'none';
       });
     });
@@ -205,6 +222,7 @@ function completed() {
   const complete = document.getElementById('complete');
   complete.style.display = 'none';
   complete.removeEventListener('click', completed);
+  editAnounce.style.display = 'none';
   if (dottedPolyline) {
     dottedPolyline.setMap(null);
     dottedPolyline = null;}
@@ -263,13 +281,14 @@ function drawSnappedPolyline(snappedCoordinates) {
       return;
     }
     isPolylineSelected = true;
-
     let editPathValues = [];
 
     let path = this.getPath();
     for (let i = 0; i < path.getLength(); i++) {
       editPathValues.push(path.getAt(i));
     }
+
+    // 点線の記入
     const lineSymbol = {
       path: "M 0,-1 0,1",
       strokeColor: '#ff4500',
@@ -287,16 +306,16 @@ function drawSnappedPolyline(snappedCoordinates) {
         },
       ]
     });
+
     this.setMap(null);
     dottedPolyline.setMap(map);
 
 
     start_button.style.display = 'none';
+    // ここでルート作成される
     drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYLINE);
-    let completeButton;
-    if (!completeButton) {
-      showCompleteButton();
-    }
+    editAnounce.style.display = 'block';
+    showCompleteButton();
     deleteOldPath(editPathValues);
     isPolylineSelected = false;
     start_button.style.display = 'block';
@@ -356,7 +375,7 @@ function clickListener(event, map) {
   const lng = event.latLng.lng();
   const marker = new google.maps.Marker({
     position: {lat, lng},
-    map
+    map,
   });
   // スポットにクリックイベントを追加
   marker.addListener('click', function() {

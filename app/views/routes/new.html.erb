@@ -39,17 +39,24 @@
         </div>
       </div>
     </div>
+    <div id="editAnounce" class="hidden fixed my-10 h-10 w-full">
+      <div role="alert" class="alert mx-auto bg-orange-300 w-3/5">
+        <p class="text-center">ルートを再作成してください</p>
+      </div>
+    </div>
   <% end %>
-
-  <div id="spotInfo" class="absolute hidden container top-20 left-5 inset-x-auto">
-    <button id="infoClose" class="btn w-16 h-16 inline-block rounded-full z-50">閉じる</button>
-    <div class="flex justify-center bg-lime-100">
-      <div class="flex-col my-40">
+  
+  <div id="spotInfo" class="absolute hidden flex top-20 w-full">
+    <div class="card w-96 my-10 mx-auto  bg-lime-100">
+      <button id="infoClose" class="btn w-16 h-16 inline-block rounded-full z-50">閉じる</button>
+      <div class="flex-col px-5 pb-5">
         <%= form_with model: @spot, url: save_spot_data_path, id: "spot_form" do |f|%>
           <div class="my-5">
             <%= f.label :photo, class: "form-label"%>
-            <img id="new_image" class="w-40 h-40" src="">
-            <%= f.file_field :photo, class: "form-control" %>
+            <img id="new_image" class="w-40 h-40 mb-2" src="">
+            <% if logged_in? %>
+              <%= f.file_field :photo, class: "form-control" %>
+            <% end %>
           </div>
           <div class="my-5">
             <%= f.label :name, class: "form-label"%>
@@ -61,7 +68,10 @@
           </div>
           <%= f.hidden_field :latitude, id: "lat" %>
           <%= f.hidden_field :longitude, id: "lng" %>
-          <%= f.submit "登録", type: "button", id: "save_form", class: "btn btn-primary" %>
+          <div class="flex justify-center">
+            <%= f.submit "削除", type: "button", id: "delete_form", class: "btn btn-danger hidden mx-5" %>
+            <%= f.submit "登録", type: "button", id: "save_form", class: "btn btn-primary" %>
+          </div>
         <% end %>
       </div>
     </div>
